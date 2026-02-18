@@ -1,1 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🥇 XAUUSD Signal Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold:#FFD700; --gold2:#FFA500; --green:#00FF88;
+  --red:#FF3B5C; --bg:#050A0F; --bg2:#090F18; --bg3:#0D1520;
+  --border:rgba(255,215,0,0.15); --text:#C8D8E8;
+  --mono:'Share Tech Mono',monospace;
+  --head:'Orbitron',sans-serif;
+  --body:'Rajdhani',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(255,215,0,0.025) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,215,0,0.025) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0;}
+.wrap{max-width:1100px;margin:0 auto;padding:20px;position:relative;z-index:1;}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:20px 0 28px;border-bottom:1px solid var(--border);margin-bottom:24px;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-icon{width:46px;height:46px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 20px rgba(255,215,0,0.3);}
+.logo h1{font-family:var(--head);font-size:17px;color:var(--gold);letter-spacing:3px;}
+.logo span{font-family:var(--mono);font-size:10px;color:rgba(200,216,232,0.4);letter-spacing:2px;}
+.live-badge{display:flex;align-items:center;gap:8px;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.3);padding:8px 16px;border-radius:6px;font-family:var(--mono);font-size:12px;color:var(--green);letter-spacing:2px;}
+.dot{width:8px;height:8px;background:var(--green);border-radius:50%;animation:blink 1.5s ease-in-out infinite;box-shadow:0 0 8px var(--green);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:15px 18px;position:relative;overflow:hidden;}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.stat-label{font-family:var(--mono);font-size:10px;color:rgba(200,216,232,0.35);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+.stat-val{font-family:var(--head);font-size:24px;color:var(--gold);}
+.stat-val.g{color:var(--green);}
+.stat-val.r{color:var(--red);}
+
+/* TICKER */
+.ticker{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 18px;margin-bottom:20px;display:flex;align-items:center;gap:16px;font-family:var(--mono);}
+.t-label{color:var(--gold);font-size:10px;letter-spacing:2px;}
+.t-price{color:var(--text);font-size:20px;}
+.t-time{margin-left:auto;font-size:10px;color:rgba(200,216,232,0.25);letter-spacing:1px;}
+
+/* GRID */
+.main{display:grid;grid-template-columns:1fr 340px;gap:18px;}
+
+/* SIGNAL PANEL */
+.panel{background:var(--bg3);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.ph{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.ph-title{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:rgba(200,216,232,0.4);text-transform:uppercase;}
+.ph-sub{font-family:var(--mono);font-size:10px;color:rgba(200,216,232,0.25);}
+.pb{padding:26px;}
+
+/* BIG SIGNAL */
+.sig-center{display:flex;flex-direction:column;align-items:center;text-align:center;}
+.sig-type{font-family:var(--head);font-size:62px;font-weight:900;letter-spacing:5px;line-height:1;margin-bottom:8px;}
+.sig-type.buy {color:var(--green);text-shadow:0 0 40px rgba(0,255,136,0.35);}
+.sig-type.sell{color:var(--red);  text-shadow:0 0 40px rgba(255,59,92,0.35);}
+.sig-type.wait{color:rgba(200,216,232,0.15);font-size:36px;}
+.sig-price{font-family:var(--mono);font-size:26px;color:var(--gold);margin-bottom:4px;}
+.sig-time{font-family:var(--mono);font-size:10px;color:rgba(200,216,232,0.3);letter-spacing:2px;margin-bottom:26px;}
+
+/* LEVELS */
+.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;}
+.lvl{border-radius:10px;padding:14px;text-align:center;transition:all .3s;}
+.lvl.sl {background:rgba(255,59,92,0.08); border:1px solid rgba(255,59,92,0.25);}
+.lvl.tp1{background:rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.2);}
+.lvl.tp2{background:rgba(0,255,136,0.06); border:1px solid rgba(0,255,136,0.2);}
+.lvl.hit-green{background:rgba(0,255,136,0.2)!important;border-color:var(--green)!important;animation:flash .5s;}
+.lvl.hit-red  {background:rgba(255,59,92,0.25)!important;border-color:var(--red)!important;animation:flash .5s;}
+@keyframes flash{0%{transform:scale(1.06)}100%{transform:scale(1)}}
+.lvl-name{font-family:var(--mono);font-size:9px;letter-spacing:2px;margin-bottom:5px;}
+.lvl.sl  .lvl-name{color:var(--red);}
+.lvl.tp1 .lvl-name,.lvl.tp2 .lvl-name{color:var(--green);}
+.lvl-val{font-family:var(--mono);font-size:17px;color:var(--text);}
+.lvl-status{font-family:var(--mono);font-size:10px;color:rgba(200,216,232,0.3);margin-top:3px;}
+.lvl-status.ok {color:var(--green);font-weight:bold;}
+.lvl-status.bad{color:var(--red);  font-weight:bold;}
+
+/* HIT BANNER */
+.hit-banner{display:none;margin-top:18px;border-radius:12px;padding:18px 22px;text-align:center;font-family:var(--head);font-size:20px;letter-spacing:2px;animation:slideIn .4s ease;}
+.hit-banner.profit{background:rgba(0,255,136,0.1);border:2px solid var(--green);color:var(--green);box-shadow:0 0 30px rgba(0,255,136,0.15);}
+.hit-banner.loss  {background:rgba(255,59,92,0.1); border:2px solid var(--red);  color:var(--red);  box-shadow:0 0 30px rgba(255,59,92,0.15);}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+/* HISTORY */
+.hist{flex:1;overflow-y:auto;padding:10px;max-height:500px;}
+.hist::-webkit-scrollbar{width:3px;}
+.hist::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.hitem{display:grid;grid-template-columns:50px 1fr auto;align-items:center;gap:10px;padding:11px;border-radius:8px;margin-bottom:7px;border:1px solid transparent;transition:.2s;animation:fadeIn .35s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}
+.hitem:hover{background:rgba(255,215,0,0.03);border-color:var(--border);}
+.hbadge{width:50px;height:50px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-size:10px;font-weight:700;letter-spacing:1px;text-align:center;line-height:1.2;}
+.hbadge.buy {background:rgba(0,255,136,0.12);color:var(--green);border:1px solid rgba(0,255,136,0.3);}
+.hbadge.sell{background:rgba(255,59,92,0.12); color:var(--red);  border:1px solid rgba(255,59,92,0.3);}
+.hbadge.tp1 {background:rgba(0,255,136,0.2);  color:var(--green);border:1px solid var(--green);font-size:9px;}
+.hbadge.tp2 {background:var(--green);          color:#000;        border:1px solid var(--green);font-size:9px;}
+.hbadge.sl  {background:var(--red);            color:#fff;        border:1px solid var(--red);  font-size:9px;}
+.hprice{font-family:var(--mono);font-size:14px;color:var(--text);}
+.htime {font-family:var(--mono);font-size:10px;color:rgba(200,216,232,0.3);margin-top:2px;}
+.hresult{font-family:var(--mono);font-size:12px;text-align:right;}
+.hresult.profit{color:var(--green);}
+.hresult.loss  {color:var(--red);}
+.hresult.open  {color:rgba(200,216,232,0.25);}
+
+/* DEMO BAR */
+.demo{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;padding:12px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;align-items:center;}
+.demo-lbl{font-family:var(--mono);font-size:10px;color:rgba(200,216,232,0.3);letter-spacing:2px;margin-right:4px;}
+.dbtn{padding:7px 14px;border-radius:6px;border:none;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:1px;transition:.2s;}
+.dbtn:hover{opacity:.75;transform:scale(.97);}
+.dbtn.buy {background:rgba(0,255,136,0.15);color:var(--green);border:1px solid rgba(0,255,136,0.4);}
+.dbtn.sell{background:rgba(255,59,92,0.15); color:var(--red);  border:1px solid rgba(255,59,92,0.4);}
+.dbtn.tp1 {background:rgba(0,255,136,0.1);  color:var(--green);border:1px solid rgba(0,255,136,0.25);}
+.dbtn.tp2 {background:rgba(0,255,136,0.2);  color:var(--green);border:1px solid var(--green);}
+.dbtn.sl  {background:rgba(255,59,92,0.2);  color:var(--red);  border:1px solid var(--red);}
+.dbtn.clr {background:rgba(255,255,255,0.04);color:rgba(200,216,232,0.35);border:1px solid rgba(255,255,255,0.08);}
+
+/* WEBHOOK PANEL */
+.wh{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:22px;margin-top:18px;}
+.wh-title{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:14px;}
+.wh-url{background:var(--bg);border:1px solid rgba(255,215,0,0.2);border-radius:8px;padding:11px 14px;font-family:var(--mono);font-size:12px;color:var(--gold);word-break:break-all;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.wh-url span{flex:1;}
+.cpbtn{background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);color:var(--gold);padding:6px 12px;border-radius:6px;cursor:pointer;font-family:var(--mono);font-size:11px;white-space:nowrap;transition:.2s;}
+.cpbtn:hover{background:rgba(255,215,0,0.2);}
+.wh-info{font-family:var(--mono);font-size:11px;color:rgba(200,216,232,0.4);line-height:1.9;letter-spacing:.4px;}
+.wh-info b{color:var(--gold);}
+.code-block{color:rgba(255,215,0,0.65);display:block;background:rgba(0,0,0,0.35);padding:12px;border-radius:6px;margin:6px 0;font-size:11px;line-height:1.7;}
+
+.empty{text-align:center;padding:40px 20px;color:rgba(200,216,232,0.2);font-family:var(--mono);font-size:11px;letter-spacing:2px;}
+.empty div{font-size:30px;margin-bottom:10px;opacity:.3;}
+
+/* CONNECTION STATUS */
+.conn-status{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:4px 10px;border-radius:4px;}
+.conn-status.ok  {color:var(--green);background:rgba(0,255,136,0.1);}
+.conn-status.fail{color:var(--red);  background:rgba(255,59,92,0.1);}
+
+@media(max-width:720px){
+  .main{grid-template-columns:1fr;}
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .sig-type{font-size:44px;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🥇</div>
+    <div>
+      <h1>XAUUSD</h1>
+      <span>LIVE SIGNAL DASHBOARD</span>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span class="conn-status fail" id="connStatus">CONNECTING...</span>
+    <div class="live-badge"><div class="dot"></div>LIVE</div>
+  </div>
+</header>
+
+<!-- TICKER -->
+<div class="ticker">
+  <span class="t-label">GOLD / USD</span>
+  <span class="t-price" id="tPrice">—</span>
+  <span class="t-time" id="tTime">Waiting for signal...</span>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat-label">Total Signals</div><div class="stat-val" id="sTotal">0</div></div>
+  <div class="stat"><div class="stat-label">TP Hit</div><div class="stat-val g" id="sTP">0</div></div>
+  <div class="stat"><div class="stat-label">SL Hit</div><div class="stat-val r" id="sSL">0</div></div>
+  <div class="stat"><div class="stat-label">Win Rate</div><div class="stat-val" id="sWR">—</div></div>
+</div>
+
+<!-- DEMO -->
+<div class="demo">
+  <span class="demo-lbl">TEST →</span>
+  <button class="dbtn buy"  onclick="demo('buy')">🟢 BUY</button>
+  <button class="dbtn sell" onclick="demo('sell')">🔴 SELL</button>
+  <button class="dbtn tp1"  onclick="demo('tp1')">✅ TP1 HIT</button>
+  <button class="dbtn tp2"  onclick="demo('tp2')">🎯 TP2 HIT</button>
+  <button class="dbtn sl"   onclick="demo('sl')">❌ SL HIT</button>
+  <button class="dbtn clr"  onclick="clearAll()">🗑 Clear</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- CURRENT SIGNAL -->
+  <div class="panel">
+    <div class="ph">
+      <span class="ph-title">Current Signal</span>
+      <span class="ph-sub" id="sigTimeH">—</span>
+    </div>
+    <div class="pb">
+      <div class="sig-center">
+        <div class="sig-type wait" id="sigType">WAITING</div>
+        <div class="sig-price" id="sigPrice">@ —</div>
+        <div class="sig-time"  id="sigTime">No signal yet</div>
+
+        <div class="levels" id="lvlGrid" style="display:none;">
+          <div class="lvl sl"  id="bSL">
+            <div class="lvl-name">STOP LOSS</div>
+            <div class="lvl-val" id="vSL">—</div>
+            <div class="lvl-status" id="stSL">Active</div>
+          </div>
+          <div class="lvl tp1" id="bTP1">
+            <div class="lvl-name">TP 1</div>
+            <div class="lvl-val" id="vTP1">—</div>
+            <div class="lvl-status" id="stTP1">Waiting</div>
+          </div>
+          <div class="lvl tp2" id="bTP2">
+            <div class="lvl-name">TP 2</div>
+            <div class="lvl-val" id="vTP2">—</div>
+            <div class="lvl-status" id="stTP2">Waiting</div>
+          </div>
+        </div>
+
+        <div class="hit-banner" id="hitBanner"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="panel" style="display:flex;flex-direction:column;">
+    <div class="ph">
+      <span class="ph-title">History</span>
+      <span class="ph-sub" id="histCount">0 signals</span>
+    </div>
+    <div class="hist" id="histList">
+      <div class="empty"><div>📡</div>WAITING FOR SIGNALS</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- WEBHOOK INFO -->
+<div class="wh">
+  <div class="wh-title">📡 TradingView Webhook Setup</div>
+  <div class="wh-url">
+    <span id="whUrl">Loading...</span>
+    <button class="cpbtn" onclick="copyURL()">COPY</button>
+  </div>
+  <div class="wh-info">
+    <b>Step 1:</b> TradingView → Alert banao (bot signal pe)<br>
+    <b>Step 2:</b> Notifications tab → "Webhook URL" mein yeh URL paste karo<br>
+    <b>Step 3:</b> Message box mein yeh JSON paste karo:<br>
+    <span class="code-block">
+BUY signal:<br>
+{"type":"buy","price":"{{close}}","sl":"APNA_SL","tp1":"APNA_TP1","tp2":"APNA_TP2"}<br><br>
+SELL signal:<br>
+{"type":"sell","price":"{{close}}","sl":"APNA_SL","tp1":"APNA_TP1","tp2":"APNA_TP2"}<br><br>
+TP1 hit alert:<br>
+{"type":"tp1","price":"{{close}}"}<br><br>
+TP2 hit alert:<br>
+{"type":"tp2","price":"{{close}}"}<br><br>
+SL hit alert:<br>
+{"type":"sl","price":"{{close}}"}
+    </span>
+    <b style="color:var(--green);">💡 Upar Test buttons se pehle try karo!</b>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── State ─────────────────────────────────────────────────
+let current  = null;
+let history  = [];
+let stats    = {total:0, tp:0, sl:0};
+let tp1Done  = false;
+
+// ── SSE Connection ────────────────────────────────────────
+function connect() {
+  const es = new EventSource('/events');
+
+  es.onopen = () => {
+    document.getElementById('connStatus').textContent = 'CONNECTED';
+    document.getElementById('connStatus').className   = 'conn-status ok';
+  };
+
+  es.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+
+    if (data.type === 'history') {
+      // Load all existing signals
+      data.signals.forEach(s => applySignal(s, false));
+      renderAll();
+    } else if (data.type === 'signal') {
+      applySignal(data.signal, true);
+      renderAll();
+    } else if (data.type === 'clear') {
+      current = null; history = []; stats = {total:0,tp:0,sl:0}; tp1Done = false;
+      renderAll();
+    }
+  };
+
+  es.onerror = () => {
+    document.getElementById('connStatus').textContent = 'RECONNECTING...';
+    document.getElementById('connStatus').className   = 'conn-status fail';
+    es.close();
+    setTimeout(connect, 3000);
+  };
+}
+
+// ── Apply one signal ──────────────────────────────────────
+function applySignal(s, animate) {
+  const t = s.type;
+
+  if (t === 'buy' || t === 'sell') {
+    current = {
+      type:  t,
+      price: parseFloat(s.price||0),
+      sl:    parseFloat(s.sl||0),
+      tp1:   parseFloat(s.tp1||0),
+      tp2:   parseFloat(s.tp2||0),
+      time:  fmtTime(s.time),
+      slHit:false, tp1Hit:false, tp2Hit:false
+    };
+    stats.total++;
+    tp1Done = false;
+    history.push({type:t, price:s.price, time:fmtTime(s.time), result:'open'});
+    if (animate) showBanner('', '');
+
+  } else if (t === 'tp1') {
+    if (current && !tp1Done) { current.tp1Hit = true; tp1Done = true; }
+    history.push({type:'tp1', price:s.price, time:fmtTime(s.time), result:'profit'});
+    if (animate) showBanner('✅ TP1 HIT — Partial Profit!', 'profit');
+
+  } else if (t === 'tp2') {
+    if (current) { current.tp2Hit = true; }
+    stats.tp++;
+    history.push({type:'tp2', price:s.price, time:fmtTime(s.time), result:'profit'});
+    if (animate) showBanner('🎯 TP2 HIT — FULL PROFIT!', 'profit');
+
+  } else if (t === 'sl') {
+    if (current) { current.slHit = true; }
+    stats.sl++;
+    history.push({type:'sl', price:s.price, time:fmtTime(s.time), result:'loss'});
+    if (animate) showBanner('❌ STOP LOSS HIT', 'loss');
+  }
+
+  if (s.price) {
+    document.getElementById('tPrice').textContent = parseFloat(s.price).toFixed(2);
+    document.getElementById('tTime').textContent  = 'Updated: ' + fmtTime(s.time);
+  }
+
+  if (history.length > 60) history.shift();
+}
+
+// ── Render ────────────────────────────────────────────────
+function renderAll() { renderSignal(); renderHistory(); renderStats(); }
+
+function renderSignal() {
+  const c = current;
+  const el = (id) => document.getElementById(id);
+
+  if (!c) {
+    el('sigType').className = 'sig-type wait';
+    el('sigType').textContent = 'WAITING';
+    el('sigPrice').textContent = '@ —';
+    el('sigTime').textContent  = 'No signal yet';
+    el('lvlGrid').style.display = 'none';
+    return;
+  }
+
+  el('sigType').className = 'sig-type ' + c.type;
+  el('sigType').textContent = c.type.toUpperCase();
+  el('sigPrice').textContent = '@ ' + (c.price ? c.price.toFixed(2) : '—');
+  el('sigTime').textContent  = c.time;
+  el('sigTimeH').textContent = c.time;
+  el('lvlGrid').style.display = 'grid';
+
+  el('vSL').textContent  = c.sl  ? c.sl.toFixed(2)  : '—';
+  el('vTP1').textContent = c.tp1 ? c.tp1.toFixed(2) : '—';
+  el('vTP2').textContent = c.tp2 ? c.tp2.toFixed(2) : '—';
+
+  // SL
+  if (c.slHit) {
+    el('bSL').className  = 'lvl sl hit-red';
+    el('stSL').textContent = '❌ HIT';
+    el('stSL').className = 'lvl-status bad';
+  } else {
+    el('bSL').className  = 'lvl sl';
+    el('stSL').textContent = 'Active';
+    el('stSL').className = 'lvl-status';
+  }
+
+  // TP1
+  if (c.tp1Hit) {
+    el('bTP1').className  = 'lvl tp1 hit-green';
+    el('stTP1').textContent = '✅ HIT';
+    el('stTP1').className = 'lvl-status ok';
+  } else {
+    el('bTP1').className  = 'lvl tp1';
+    el('stTP1').textContent = 'Waiting';
+    el('stTP1').className = 'lvl-status';
+  }
+
+  // TP2
+  if (c.tp2Hit) {
+    el('bTP2').className  = 'lvl tp2 hit-green';
+    el('stTP2').textContent = '✅ HIT';
+    el('stTP2').className = 'lvl-status ok';
+  } else {
+    el('bTP2').className  = 'lvl tp2';
+    el('stTP2').textContent = 'Waiting';
+    el('stTP2').className = 'lvl-status';
+  }
+}
+
+function renderHistory() {
+  const list = document.getElementById('histList');
+  document.getElementById('histCount').textContent = history.length + ' signals';
+
+  if (!history.length) {
+    list.innerHTML = '<div class="empty"><div>📡</div>WAITING FOR SIGNALS</div>';
+    return;
+  }
+
+  const map = {
+    buy:  {cls:'buy', txt:'BUY'},
+    sell: {cls:'sell',txt:'SELL'},
+    tp1:  {cls:'tp1', txt:'TP1 ✅'},
+    tp2:  {cls:'tp2', txt:'TP2 🎯'},
+    sl:   {cls:'sl',  txt:'SL ❌'}
+  };
+
+  list.innerHTML = history.slice().reverse().map(h => {
+    const b = map[h.type] || {cls:'buy',txt:h.type};
+    const r = h.result === 'profit' ? '<span class="hresult profit">PROFIT</span>'
+            : h.result === 'loss'   ? '<span class="hresult loss">LOSS</span>'
+            : '<span class="hresult open">OPEN</span>';
+    return `<div class="hitem">
+      <div class="hbadge ${b.cls}">${b.txt}</div>
+      <div>
+        <div class="hprice">${h.price ? '@ '+parseFloat(h.price).toFixed(2) : '—'}</div>
+        <div class="htime">${h.time}</div>
+      </div>
+      ${r}
+    </div>`;
+  }).join('');
+}
+
+function renderStats() {
+  document.getElementById('sTotal').textContent = stats.total;
+  document.getElementById('sTP').textContent    = stats.tp;
+  document.getElementById('sSL').textContent    = stats.sl;
+  const tot = stats.tp + stats.sl;
+  const wr  = tot > 0 ? Math.round(stats.tp/tot*100)+'%' : '—';
+  const el  = document.getElementById('sWR');
+  el.textContent = wr;
+  el.className   = 'stat-val' + (tot > 0 ? (stats.tp/tot >= 0.5 ? ' g' : ' r') : '');
+}
+
+function showBanner(msg, type) {
+  if (!msg) return;
+  const el = document.getElementById('hitBanner');
+  el.textContent = msg;
+  el.className   = 'hit-banner ' + type;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 5000);
+}
+
+// ── Demo buttons ──────────────────────────────────────────
+function demo(type) {
+  const p = (4920 + Math.random()*80);
+  let body;
+  if      (type==='buy')  body={type:'buy', price:p.toFixed(2), sl:(p-9).toFixed(2),  tp1:(p+14).toFixed(2), tp2:(p+27).toFixed(2)};
+  else if (type==='sell') body={type:'sell',price:p.toFixed(2), sl:(p+9).toFixed(2),  tp1:(p-14).toFixed(2), tp2:(p-27).toFixed(2)};
+  else                    body={type, price:p.toFixed(2)};
+
+  fetch('/test', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+}
+
+function clearAll() {
+  if (!confirm('Sab clear karna hai?')) return;
+  fetch('/signals', {method:'DELETE'});
+}
+
+function copyURL() {
+  navigator.clipboard.writeText(document.getElementById('whUrl').textContent).then(() => {
+    const b = document.querySelector('.cpbtn');
+    b.textContent = 'COPIED!';
+    setTimeout(() => b.textContent = 'COPY', 2000);
+  });
+}
+
+function fmtTime(iso) {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) + ' ' +
+           d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+  } catch(e) { return iso; }
+}
+
+// ── Set webhook URL ───────────────────────────────────────
+document.getElementById('whUrl').textContent = window.location.origin + '/webhook';
+
+// ── Start ─────────────────────────────────────────────────
+connect();
+</script>
+</body>
+</html>
 
